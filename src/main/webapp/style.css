@@ -1,0 +1,13 @@
+.white-popup-block {
+  background: #FFF;
+  padding: 45px;
+  text-align: left;
+  max-width: 650px;
+  margin: 40px auto;
+  position: relative;
+  border-radius: 5px;
+}
+
+.checkbox-full {
+  width: calc(1.5em + .75rem + 2px);
+}

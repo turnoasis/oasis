@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" href="./lib/bootstrap.min.css">
+  <link rel="stylesheet" href="./lib/magnific-popup.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="./lib/jquery.min.js"></script>
+  <script src="./lib/jquery.magnific-popup.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to Turn Management!!!!!!</h1>
+    <div class="form-group row">
+      <label for="name" class="col-sm-2 col-form-label">Employee</label>
+      <div class="col-sm-6">
+        <input type="text" class="form-control js-user" id="name">
+      </div>
+      <div class="col-sm-4">
+          <button type="button" class="btn btn-success js-addUser" disabled>Login</button>
+      </div>
+    </div>
+    <table class="table table-striped">
+      <thead>
+        <th scope="col">No</th>
+        <th scope="col">Employee</th>
+        <th scope="col">Total turn</th>
+        <th scope="col">Total</th>
+        <th scope="col">Status</th>
+        <th scope="col">Login time</th>
+        <th scope="col">Turn List</th>
+        <th scope="col">Add turn</th>
+        <th scope="col">Working</th>
+      </thead>
+      <tbody class="js-table">
+        <!-- Data is here -->
+      </tbody>
+    </table>
+  </div>
+  <div id="login" class="white-popup-block mfp-hide js-paddWorkHis">
+    <div class="form-group row">
+      <label for="puser" class="col-sm-4 col-form-label">User Name</label>
+      <div class="col-sm-8">
+        <input type="text" name="user" class="form-control" id="pname">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="ppass" class="col-sm-4 col-form-label">Password</label>
+      <div class="col-sm-8">
+        <input type="password" name="pass" class="form-control" id="ppass">
+      </div>
+    </div>
+    
+    <div class="row">
+      <div class="col-sm-6 offset-sm-3 text-right">
+       
+      </div>
+      <div class="col-sm-3 text-right">
+        <button type="button" class="btn btn-success js-login">Login</button>
+      </div>
+    </div>
+  </div>
+  <div id="viewMore" class="white-popup-block mfp-hide">
+    <table class="table">
+      <thead>
+        <th scope="col">Sevice</th>
+        <th scope="col">Free</th>
+        <th scope="col">Money</th>
+        <th scope="col">Action</th>
+      </thead>
+      <tbody class="js-ptable">
+        <td>1</td>
+        <td>Free</td>
+        <td>21</td>
+        <td><a href="javascript:(void(0));" class="js-edit">Edit</a> - <a href="javascript:(void(0));" class="js-delete">Delete</a></td>
+      </tbody>
+    </table>
+    <div class="text-right"><button type="button" class="btn btn-success popup-modal-dismiss">Close</button></div>
+  </div>
+  <div id="addWorkHis" class="white-popup-block mfp-hide js-paddWorkHis">
+    <input type="hidden" name="id" value="">
+    <input type="hidden" name="workHisId" value="">
+    <div class="form-group row">
+      <label for="pname" class="col-sm-4 col-form-label">Sevice</label>
+      <div class="col-sm-8">
+        <input type="text" name="name" class="form-control" id="pname">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="pmoney" class="col-sm-4 col-form-label">Money</label>
+      <div class="col-sm-8">
+        <input type="text" name="money" class="form-control" id="pmoney">
+      </div>
+    </div>
+    <div class="form-group row">
+      <label for="pfree" class="col-sm-4 col-form-label">Free</label>
+      <div class="col-sm-8">
+        <input type="checkbox" name="free" class="form-control checkbox-full" id="pfree">
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm-6 offset-sm-3 text-right">
+        <button type="button" class="btn btn-success popup-modal-dismiss">Cancel</button>
+      </div>
+      <div class="col-sm-3 text-right">
+        <button type="button" class="btn btn-success js-add">Add</button>
+      </div>
+    </div>
+  </div>
+  <script src="./script.js"></script>
+</body>
+</html>
