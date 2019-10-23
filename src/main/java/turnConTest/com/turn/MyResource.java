@@ -48,7 +48,7 @@ public class MyResource {
 	HashMap<String, Employee> employee = new HashMap<String, Employee>();
 	HashMap<String, Employee> employeeT = new HashMap<String, Employee>();
 	ArrayList<ArrayList<Employee>> arrOfArrEmployee = new ArrayList<ArrayList<Employee>>();
-	public static final int STEP_TURN = 15;
+	public static final int STEP_TURN = 20;
 	public static String username;
 	public static String password;
 
@@ -295,10 +295,10 @@ public class MyResource {
 
 	// http://localhost:8080/com.turn/api/addGroup/{name}/{money}/{free}
 	@GET
-	@Path("/addGroup/{id}/{name}/{money}/{free}")
+	@Path("/addGroup/{id}/{name}/{money}/{free}/{over}")
 	@Produces({ MediaType.APPLICATION_JSON })
 	public String addGroup(@Context HttpHeaders httpheaders, @PathParam("id") String id, @PathParam("name") String name,
-			@PathParam("money") double money, @PathParam("free") String free) {
+			@PathParam("money") double money, @PathParam("free") String free, @PathParam("over") String over) {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
 		String token = httpheaders.getHeaderString("Authorization");
 		int checkL = checkLogin(token);
@@ -308,6 +308,15 @@ public class MyResource {
 			return "{\"error\": \"notLogin\"}";
 		}
 		Employee employee1 = EmployeeDAO.getEmployee(id);
+		if ("0".equals(over)) {
+			LocalDateTime checkOut = Instant.now().atZone(ZoneId.of("America/Chicago")).toLocalDateTime();
+			LocalDateTime checkIn = employee1.getCheckInTime();
+			int timeNew = checkOut.getHour() * 60 + checkOut.getMinute();
+			int timeOld = checkIn.getHour() * 60 + checkIn.getMinute();
+			if ((timeNew - timeOld) < money) {
+				return "{\"error\": \"inValid\"}";
+			}
+		}
 		// check null
 		int index = 1;
 		for (int i = 0; i < employee1.getTurnListD().size(); i++) {
@@ -317,9 +326,8 @@ public class MyResource {
 			}
 		}
 		index++;
-		employee1.getTurnListD()
-				.add(new WorkHis(name, money, "1".equals(free) ? true : false, Integer.toString(index),
-						dtf.format(Instant.now().atZone(ZoneId.of("America/Chicago")).toLocalDateTime())));
+		employee1.getTurnListD().add(new WorkHis(name, money, "1".equals(free) ? true : false, Integer.toString(index),
+				dtf.format(Instant.now().atZone(ZoneId.of("America/Chicago")).toLocalDateTime())));
 		if ("0".equals(free)) {
 			employee1.setTotalTurn(employee1.getTotalTurn() + money);
 		}
@@ -433,6 +441,8 @@ public class MyResource {
 		}
 		Employee employee1 = EmployeeDAO.getEmployee(id);
 		employee1.setIsWorking(!employee1.isIsWorking());
+		LocalDateTime checkIn = Instant.now().atZone(ZoneId.of("America/Chicago")).toLocalDateTime();
+		employee1.setLstTime(checkIn);
 		employee = EmployeeDAO.addEmployee(id, employee1);
 		return buildJson(updatePosition(new ArrayList<Employee>(employee.values())), 1, false);
 	}
@@ -534,6 +544,7 @@ public class MyResource {
 		String id2 = employee1.get("id").toString();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yy:MM:dd HH:mm:ss");
 		tmpe.setCheckInTime(LocalDateTime.parse(id + " " + employee1.get("loginTime").toString(), formatter));
+		tmpe.setLstTime(LocalDateTime.parse(id + " " + employee1.get("lstTime").toString(), formatter)); // Adding new
 		tmpe.setPosition(Integer.parseInt(employee1.get("sortOrder").toString()));
 		tmpe.setTotal(Double.parseDouble(employee1.get("turnAll").toString()));
 		tmpe.setTotalTurn(Double.parseDouble(employee1.get("turn").toString()));
@@ -782,6 +793,7 @@ public class MyResource {
 				s += "\"status\" : \"" + ((employee.get(j).get(index).isActive()) ? "1" : "0") + "\",";
 				s += "\"working\" : \"" + ((employee.get(j).get(index).isIsWorking()) ? "1" : "0") + "\",";
 				s += "\"loginTime\" : \"" + dtf.format(employee.get(j).get(index).getCheckInTime()) + "\",";
+				s += "\"lstTime\" : \"" + dtf.format(employee.get(j).get(index).getLstTime()) + "\",";
 				s += "\"workHis\" : [";
 				k = 0;
 				for (WorkHis work : employee.get(j).get(index).getTurnListD()) {
@@ -794,7 +806,7 @@ public class MyResource {
 					s += "\"name\" : \"" + work.getName() + "\",";
 					s += "\"free\" : \"" + ((work.isTurn()) ? "1" : "0") + "\",";
 					s += "\"money\" : \"" + work.getMoney() + "\",";
-					s += "\"workTime\" : \"" + (work.getWorkTime()==null?"Unkown": work.getWorkTime()) + "\"";
+					s += "\"workTime\" : \"" + (work.getWorkTime() == null ? "Unkown" : work.getWorkTime()) + "\"";
 					s += "}";
 				}
 				s += "]";
