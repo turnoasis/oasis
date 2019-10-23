@@ -7,6 +7,7 @@ package turnConTest.com.turn;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 
 /**
  *
@@ -25,6 +26,7 @@ public class Employee {
     boolean isWorking;
     int indexGroup;
     ArrayList<WorkHis> turnListD;
+    LocalDateTime lstTime;
 
     Employee() {
     }
@@ -33,7 +35,21 @@ public class Employee {
         return indexGroup;
     }
 
-    public void setIndexGroup(int indexGroup) {
+    /**
+	 * @return the lstTime
+	 */
+	public LocalDateTime getLstTime() {
+		return lstTime;
+	}
+
+	/**
+	 * @param lstTime the lstTime to set
+	 */
+	public void setLstTime(LocalDateTime lstTime) {
+		this.lstTime = lstTime;
+	}
+
+	public void setIndexGroup(int indexGroup) {
         this.indexGroup = indexGroup;
     }
 
@@ -87,6 +103,7 @@ public class Employee {
         this.EmployeeID = EmployeeID;
         this.EmpName = EmpName.trim();
         this.CheckInTime = CheckInTime;
+        this.lstTime = CheckInTime;
         this.Total=0;
         this.totalTurn=0;
       //  this.turnList = new ArrayList<>();
