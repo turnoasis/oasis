@@ -18,7 +18,7 @@ public class EmployeeDAO {
 		}
         String employeeID = Integer.toString(maxId + 1);
         //LocalDateTime checkIn = LocalDateTime.now();
-        LocalDateTime checkIn = Instant.now().atZone(ZoneId.of("America/Chicago")).toLocalDateTime();
+        LocalDateTime checkIn = Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime();
         employee.put(employeeID, new Employee(employeeID, employeeName, checkIn));
         return employee;
    }
