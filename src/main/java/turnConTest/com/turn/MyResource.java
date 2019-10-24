@@ -310,7 +310,7 @@ public class MyResource {
 		Employee employee1 = EmployeeDAO.getEmployee(id);
 		if ("0".equals(over)) {
 			LocalDateTime checkOut = Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime();
-			LocalDateTime checkIn = employee1.getCheckInTime();
+			LocalDateTime checkIn = employee1.getLstTime();
 			int timeNew = checkOut.getHour() * 60 + checkOut.getMinute();
 			int timeOld = checkIn.getHour() * 60 + checkIn.getMinute();
 			if ((timeNew - timeOld) < money) {
