@@ -547,7 +547,11 @@ public class MyResource {
 		String id2 = employee1.get("id").toString();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yy:MM:dd HH:mm:ss");
 		tmpe.setCheckInTime(LocalDateTime.parse(id + " " + employee1.get("loginTime").toString(), formatter));
-		tmpe.setLstTime(LocalDateTime.parse(id + " " + employee1.get("lstTime").toString(), formatter)); // Adding new
+		if(employee1.get("lstTime").equals("Not working")) {
+			tmpe.setLstTime(LocalDateTime.parse(id + " " +"00:00:00", formatter));
+		} else {
+			tmpe.setLstTime(LocalDateTime.parse(id + " " + employee1.get("lstTime").toString(), formatter)); // Adding new
+		}
 		tmpe.setPosition(Integer.parseInt(employee1.get("sortOrder").toString()));
 		tmpe.setTotal(Double.parseDouble(employee1.get("turnAll").toString()));
 		tmpe.setTotalTurn(Double.parseDouble(employee1.get("turn").toString()));
