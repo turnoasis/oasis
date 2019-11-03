@@ -798,8 +798,10 @@ public class MyResource {
 				s += "\"status\" : \"" + ((employee.get(j).get(index).isActive()) ? "1" : "0") + "\",";
 				s += "\"working\" : \"" + ((employee.get(j).get(index).isIsWorking()) ? "1" : "0") + "\",";
 				s += "\"loginTime\" : \"" + dtf.format(employee.get(j).get(index).getCheckInTime()) + "\",";
-				s += "\"lstTime\" : \"" + dtf.format(employee.get(j).get(index).getLstTime()) == null ? "Not working"
-						: dtf.format(employee.get(j).get(index).getLstTime()) + "\",";
+				if(employee.get(j).get(index).getLstTime() == null)
+					s += "\"lstTime\" : \"" + "Not working\",";
+				else
+					s += "\"lstTime\" : \"" + dtf.format(employee.get(j).get(index).getLstTime()) + "\",";
 				s += "\"workHis\" : [";
 				k = 0;
 				for (WorkHis work : employee.get(j).get(index).getTurnListD()) {
