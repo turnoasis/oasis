@@ -314,7 +314,7 @@ public class MyResource {
 			int timeNew = checkOut.getHour() * 60 + checkOut.getMinute();
 			int timeOld = checkIn.getHour() * 60 + checkIn.getMinute();
 			if ((timeNew - timeOld) < money) {
-				return "{\"error\": \"inValid\"}";
+				return "{\"error\": \"inValid\", \"msg\": \"You start working at " + dtf.format(employee1.getLstTime()) + "!!!\"}";
 			}
 		}
 		// check null
@@ -326,13 +326,16 @@ public class MyResource {
 			}
 		}
 		index++;
-		employee1.getTurnListD().add(new WorkHis(name, money, "1".equals(free) ? true : false, Integer.toString(index),
-				dtf.format(Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime())));
+		employee1.getTurnListD()
+				.add(new WorkHis(name, money, "1".equals(free) ? true : false, Integer.toString(index),
+						dtf.format(Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime()),
+						dtf.format(employee1.getLstTime())));
 		if ("0".equals(free)) {
 			employee1.setTotalTurn(employee1.getTotalTurn() + money);
 		}
 		employee1.setTotal(employee1.getTotal() + money);
 		employee1.setIsWorking(false);
+		employee1.setLstTime(null);
 		employee = EmployeeDAO.addEmployee(id, employee1);
 		return buildJson(updatePosition(new ArrayList<Employee>(employee.values())), 1, false);
 	}
@@ -570,6 +573,8 @@ public class MyResource {
 					tn.setTurn("1".equals(pair.getValue().toString()) ? true : false);
 				} else if (pair.getKey().equals("workTime")) {
 					tn.setWorkTime(pair.getValue().toString());
+				} else if (pair.getKey().equals("startTime")) {
+					tn.setStartTime(pair.getValue().toString());// Adding new
 				}
 			}
 			lstWh.add(tn);
@@ -793,7 +798,8 @@ public class MyResource {
 				s += "\"status\" : \"" + ((employee.get(j).get(index).isActive()) ? "1" : "0") + "\",";
 				s += "\"working\" : \"" + ((employee.get(j).get(index).isIsWorking()) ? "1" : "0") + "\",";
 				s += "\"loginTime\" : \"" + dtf.format(employee.get(j).get(index).getCheckInTime()) + "\",";
-				s += "\"lstTime\" : \"" + dtf.format(employee.get(j).get(index).getLstTime()) + "\",";
+				s += "\"lstTime\" : \"" + dtf.format(employee.get(j).get(index).getLstTime()) == null ? "Not working"
+						: dtf.format(employee.get(j).get(index).getLstTime()) + "\",";
 				s += "\"workHis\" : [";
 				k = 0;
 				for (WorkHis work : employee.get(j).get(index).getTurnListD()) {
@@ -806,7 +812,8 @@ public class MyResource {
 					s += "\"name\" : \"" + work.getName() + "\",";
 					s += "\"free\" : \"" + ((work.isTurn()) ? "1" : "0") + "\",";
 					s += "\"money\" : \"" + work.getMoney() + "\",";
-					s += "\"workTime\" : \"" + (work.getWorkTime() == null ? "Unkown" : work.getWorkTime()) + "\"";
+					s += "\"workTime\" : \"" + (work.getWorkTime() == null ? "-" : work.getWorkTime()) + "\"";
+					s += "\"startTime\" : \"" + (work.getStartTime() == null ? "-" : work.getStartTime()) + "\"";
 					s += "}";
 				}
 				s += "]";
