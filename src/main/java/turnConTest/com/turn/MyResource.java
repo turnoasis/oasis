@@ -314,7 +314,7 @@ public class MyResource {
 			int timeNew = checkOut.getHour() * 60 + checkOut.getMinute();
 			int timeOld = checkIn.getHour() * 60 + checkIn.getMinute();
 			if ((timeNew - timeOld) < money) {
-				return "{\"error\": \"inValid\", \"msg\": \"You start working at " + dtf.format(employee1.getLstTime()) + "!!!\"}";
+				return "{\"error\": \"inValid\", \"msg\": \"Time is not ENOUGH. You start working at " + dtf.format(employee1.getLstTime()) + "!!!\"}";
 			}
 		}
 		// check null
