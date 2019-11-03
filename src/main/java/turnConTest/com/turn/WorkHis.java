@@ -6,6 +6,7 @@ public class WorkHis {
 	private boolean turn;// 1 free 0 count
 	private String id;
 	private String workTime;
+	private String startTime;
 
 	public String getName() {
 		return name;
@@ -20,15 +21,30 @@ public class WorkHis {
 	}
 
 	public WorkHis() {
-		
+		//startTime = "00:00:00";
 	}
-	public WorkHis(String name, double money, boolean turn, String id, String workTime) {
+	/**
+	 * @return the startTime
+	 */
+	public String getStartTime() {
+		return startTime;
+	}
+
+	/**
+	 * @param startTime the startTime to set
+	 */
+	public void setStartTime(String startTime) {
+		this.startTime = startTime;
+	}
+
+	public WorkHis(String name, double money, boolean turn, String id, String workTime, String startTime) {
 		super();
 		this.name = name;
 		this.money = money;
 		this.turn = turn;
 		this.id = id;
 		this.workTime = workTime;
+		this.startTime = startTime;
 	}
 
 	public void setName(String name) {
