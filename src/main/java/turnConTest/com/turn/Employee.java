@@ -103,7 +103,7 @@ public class Employee {
         this.EmployeeID = EmployeeID;
         this.EmpName = EmpName.trim();
         this.CheckInTime = CheckInTime;
-        this.lstTime = CheckInTime;
+        this.lstTime = null;
         this.Total=0;
         this.totalTurn=0;
       //  this.turnList = new ArrayList<>();
