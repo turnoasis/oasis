@@ -27,6 +27,7 @@ public class Employee {
     int indexGroup;
     ArrayList<WorkHis> turnListD;
     LocalDateTime lstTime;
+    public String pass;
 
     Employee() {
     }
@@ -36,6 +37,20 @@ public class Employee {
     }
 
     /**
+	 * @return the pass
+	 */
+	public String getPass() {
+		return pass;
+	}
+
+	/**
+	 * @param pass the pass to set
+	 */
+	public void setPass(String pass) {
+		this.pass = pass;
+	}
+
+	/**
 	 * @return the lstTime
 	 */
 	public LocalDateTime getLstTime() {
@@ -99,13 +114,14 @@ public class Employee {
         this.CheckInTime = CheckInTime;
     }
 
-    public Employee(String EmployeeID, String EmpName, LocalDateTime  CheckInTime) {
+    public Employee(String EmployeeID, String EmpName, LocalDateTime  CheckInTime, String pass) {
         this.EmployeeID = EmployeeID;
         this.EmpName = EmpName.trim();
         this.CheckInTime = CheckInTime;
         this.lstTime = null;
         this.Total=0;
         this.totalTurn=0;
+        this.pass = pass;
       //  this.turnList = new ArrayList<>();
         this.active=true;
         this.isWorking = false;

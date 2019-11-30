@@ -195,9 +195,10 @@ public class MyResource {
 
 	// http://localhost:8080/com.turn/api/addUser/abff
 	@GET
-	@Path("/addUser/{userName}")
+	@Path("/addUser/{userName}/{pass}")
 	@Produces({ MediaType.APPLICATION_JSON })
-	public String addEmployee(@Context HttpHeaders httpheaders, @PathParam("userName") String userName) {
+	public String addEmployee(@Context HttpHeaders httpheaders, @PathParam("userName") String userName,
+			@PathParam("pass") String pass) {
 		String token = httpheaders.getHeaderString("Authorization");
 		int checkL = checkLogin(token);
 		if (checkL == 1) {
@@ -243,7 +244,7 @@ public class MyResource {
 					}
 				}
 			}
-			employee = EmployeeDAO.addEmployee(userName);
+			employee = EmployeeDAO.addEmployee(userName, pass);
 			return buildJson(updatePosition(new ArrayList<Employee>(employee.values())), checkL, false);
 		} else if (checkL == 2) {
 			return "{\"error\": \"notAllow\"}";
@@ -295,10 +296,11 @@ public class MyResource {
 
 	// http://localhost:8080/com.turn/api/addGroup/{name}/{money}/{free}
 	@GET
-	@Path("/addGroup/{id}/{name}/{money}/{free}/{over}")
+	@Path("/addGroup/{id}/{name}/{money}/{free}/{over}/{pass}")
 	@Produces({ MediaType.APPLICATION_JSON })
 	public String addGroup(@Context HttpHeaders httpheaders, @PathParam("id") String id, @PathParam("name") String name,
-			@PathParam("money") double money, @PathParam("free") String free, @PathParam("over") String over) {
+			@PathParam("money") double money, @PathParam("free") String free, @PathParam("pass") String pass,
+			@PathParam("over") String over) {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
 		String token = httpheaders.getHeaderString("Authorization");
 		int checkL = checkLogin(token);
@@ -308,13 +310,17 @@ public class MyResource {
 			return "{\"error\": \"notLogin\"}";
 		}
 		Employee employee1 = EmployeeDAO.getEmployee(id);
+		if(!"2608".equals(pass) || !employee1.getPass().equals(pass)) {
+			return "{\"error\": \"notCorrPass\"}";
+		}
 		if ("0".equals(over)) {
 			LocalDateTime checkOut = Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime();
 			LocalDateTime checkIn = employee1.getLstTime();
 			int timeNew = checkOut.getHour() * 60 + checkOut.getMinute();
 			int timeOld = checkIn.getHour() * 60 + checkIn.getMinute();
 			if ((timeNew - timeOld) < money) {
-				return "{\"error\": \"inValid\", \"msg\": \"Time is not ENOUGH. You start working at " + dtf.format(employee1.getLstTime()) + "!!!\"}";
+				return "{\"error\": \"inValid\", \"msg\": \"Time is not ENOUGH. You start working at "
+						+ dtf.format(employee1.getLstTime()) + "!!!\"}";
 			}
 		}
 		// check null
@@ -341,11 +347,11 @@ public class MyResource {
 	}
 
 	@GET
-	@Path("/upGroup/{id}/{groupid}/{name}/{money}/{free}")
+	@Path("/upGroup/{id}/{groupid}/{name}/{money}/{free}/{pass}")
 	@Produces({ MediaType.APPLICATION_JSON })
 	public String updateGroup(@Context HttpHeaders httpheaders, @PathParam("id") String id,
 			@PathParam("groupid") String groudid, @PathParam("name") String name, @PathParam("money") double money,
-			@PathParam("free") String free) {
+			@PathParam("free") String free, @PathParam("pass") String pass) {
 		String token = httpheaders.getHeaderString("Authorization");
 		int checkL = checkLogin(token);
 		if (checkL == 2) {
@@ -354,6 +360,9 @@ public class MyResource {
 			return "{\"error\": \"notLogin\"}";
 		}
 		Employee employee1 = EmployeeDAO.getEmployee(id);
+		if(!"2608".equals(pass) || !employee1.getPass().equals(pass)) {
+			return "{\"error\": \"notCorrPass\"}";
+		}
 		// check null
 		int index = -1;
 		for (int i = 0; i < employee1.getTurnListD().size(); i++) {
@@ -547,10 +556,16 @@ public class MyResource {
 		String id2 = employee1.get("id").toString();
 		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yy:MM:dd HH:mm:ss");
 		tmpe.setCheckInTime(LocalDateTime.parse(id + " " + employee1.get("loginTime").toString(), formatter));
-		if(employee1.get("lstTime").equals("Not working")) {
-			tmpe.setLstTime(LocalDateTime.parse(id + " " +"00:00:00", formatter));
+		if (employee1.get("lstTime").equals("Not working")) {
+			tmpe.setLstTime(LocalDateTime.parse(id + " " + "00:00:00", formatter));
 		} else {
-			tmpe.setLstTime(LocalDateTime.parse(id + " " + employee1.get("lstTime").toString(), formatter)); // Adding new
+			tmpe.setLstTime(LocalDateTime.parse(id + " " + employee1.get("lstTime").toString(), formatter)); // Adding
+																												// new
+		}
+		if (employee1.get("pass") == null) {
+			tmpe.setPass("n_u_l_l");
+		} else {
+			tmpe.setPass(employee1.get("pass").toString()); // new
 		}
 		tmpe.setPosition(Integer.parseInt(employee1.get("sortOrder").toString()));
 		tmpe.setTotal(Double.parseDouble(employee1.get("turnAll").toString()));
@@ -796,13 +811,17 @@ public class MyResource {
 				l++;
 				s += "\"id\" : \"" + employee.get(j).get(index).getEmployeeID() + "\",";
 				s += "\"name\" : \"" + employee.get(j).get(index).getEmpName() + "\",";
+				if (employee.get(j).get(index).getPass() == null)
+					s += "\"pass\" : \"n_u_l_l\",";
+				else
+					s += "\"pass\" : \"" + employee.get(j).get(index).getPass() + "\",";
 				s += "\"sortOrder\" : \"" + employee.get(j).get(index).getPosition() + "\",";
 				s += "\"turn\" : \"" + employee.get(j).get(index).getTotalTurn() + "\",";
 				s += "\"turnAll\" : \"" + employee.get(j).get(index).getTotal() + "\",";
 				s += "\"status\" : \"" + ((employee.get(j).get(index).isActive()) ? "1" : "0") + "\",";
 				s += "\"working\" : \"" + ((employee.get(j).get(index).isIsWorking()) ? "1" : "0") + "\",";
 				s += "\"loginTime\" : \"" + dtf.format(employee.get(j).get(index).getCheckInTime()) + "\",";
-				if(employee.get(j).get(index).getLstTime() == null)
+				if (employee.get(j).get(index).getLstTime() == null)
 					s += "\"lstTime\" : \"" + "Not working\",";
 				else
 					s += "\"lstTime\" : \"" + dtf.format(employee.get(j).get(index).getLstTime()) + "\",";
