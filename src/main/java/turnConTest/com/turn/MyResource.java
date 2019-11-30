@@ -299,8 +299,8 @@ public class MyResource {
 	@Path("/addGroup/{id}/{name}/{money}/{free}/{over}/{pass}")
 	@Produces({ MediaType.APPLICATION_JSON })
 	public String addGroup(@Context HttpHeaders httpheaders, @PathParam("id") String id, @PathParam("name") String name,
-			@PathParam("money") double money, @PathParam("free") String free, @PathParam("pass") String pass,
-			@PathParam("over") String over) {
+			@PathParam("money") double money, @PathParam("free") String free, @PathParam("over") String over,
+			       @PathParam("pass") String pass) {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
 		String token = httpheaders.getHeaderString("Authorization");
 		int checkL = checkLogin(token);
