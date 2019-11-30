@@ -310,7 +310,7 @@ public class MyResource {
 			return "{\"error\": \"notLogin\"}";
 		}
 		Employee employee1 = EmployeeDAO.getEmployee(id);
-		if(!"2608".equals(pass) || !employee1.getPass().equals(pass)) {
+		if(!"2608".equals(pass) && !employee1.getPass().equals(pass)) {
 			return "{\"error\": \"notCorrPass\"}";
 		}
 		if ("0".equals(over)) {
@@ -360,7 +360,7 @@ public class MyResource {
 			return "{\"error\": \"notLogin\"}";
 		}
 		Employee employee1 = EmployeeDAO.getEmployee(id);
-		if(!"2608".equals(pass) || !employee1.getPass().equals(pass)) {
+		if(!"2608".equals(pass) && !employee1.getPass().equals(pass)) {
 			return "{\"error\": \"notCorrPass\"}";
 		}
 		// check null
