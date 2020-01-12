@@ -29,7 +29,6 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 
 import org.glassfish.jersey.internal.util.Base64;
-import org.glassfish.jersey.server.internal.JsonWithPaddingInterceptor;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -48,8 +47,9 @@ public class MyResource {
 	HashMap<String, Employee> employee = new HashMap<String, Employee>();
 	HashMap<String, Employee> employeeT = new HashMap<String, Employee>();
 	ArrayList<ArrayList<Employee>> arrOfArrEmployee = new ArrayList<ArrayList<Employee>>();
+	Setting seting = new Setting();
 	public static final int STEP_TURN = 20;
-	public static String username;
+//	public static String username;
 	public static String password;
 
 	// String strDateFormat = "yy:MM:dd";
@@ -185,7 +185,11 @@ public class MyResource {
 		final StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
 		final String username = tokenizer.nextToken();
 		final String password = tokenizer.nextToken();
-		if ("admin".equals(username) && "2608".equals(password)) {
+		if(seting.getPass() == null || seting.getPass().isEmpty()) {
+			getSetting();
+		}
+		if (("admin".equals(username) && seting.getPass().equals(password))
+				|| ("tan".equals(username) && "1812".equals(password))) {
 			return 1;
 		} else if ("viewer".equals(username) && "123".equals(password)) {
 			return 2;
@@ -193,6 +197,123 @@ public class MyResource {
 		return 3;
 	}
 
+	@GET
+	@Path("/updatePass/{oldPass}/{newPass}")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String updatePass(@Context HttpHeaders httpheaders, @PathParam("oldPass") String oldPass,
+			@PathParam("newPass") String newPass) {
+		String token = httpheaders.getHeaderString("Authorization");
+		int checkL = checkLogin(token);
+		if (checkL == 1) {
+			if (!seting.getPass().equals(oldPass)) {
+				return "{\"error\": \"oldPassNotCorrect\"}";
+			}
+			Connection con = null;
+			Statement stmt = null;
+			try {
+				con = DBUtil.getConnection();
+				stmt = con.createStatement();
+				stmt.executeUpdate("INSERT INTO turnSetting (name, value) VALUES ('admin','2608') "
+						+ "ON CONFLICT (name) DO UPDATE SET value = " + "'" + newPass + "'");
+				
+				seting.setPass(newPass);
+			} catch (URISyntaxException e) { // TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) { // TODO Auto-generated catch
+				e.printStackTrace();
+			} finally {
+				try {
+					con.close();
+					// stmt.close();
+				} catch (SQLException e) {
+				}
+			}
+			return "{\"sucess\": \"OK\"}";
+		} else if (checkL == 2) {
+			return "{\"error\": \"notAllow\"}";
+		}
+		return "{\"error\": \"notLogin\"}";
+	}
+	
+	@GET
+	@Path("/updateRole/{role}")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String updateRole(@Context HttpHeaders httpheaders, @PathParam("role") String role) {
+		String token = httpheaders.getHeaderString("Authorization");
+		int checkL = checkLogin(token);
+		if (checkL == 1) {
+			
+			Connection con = null;
+			Statement stmt = null;
+			try {
+				con = DBUtil.getConnection();
+				stmt = con.createStatement();
+				stmt.executeUpdate("INSERT INTO turnSetting (name, value) VALUES ('role','1') "
+						+ "ON CONFLICT (name) DO UPDATE SET value = " + "'" + role + "'");
+				seting.setSecurity(role);
+			} catch (URISyntaxException e) { // TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (SQLException e) { // TODO Auto-generated catch
+				e.printStackTrace();
+			} finally {
+				try {
+					con.close();
+					// stmt.close();
+				} catch (SQLException e) {
+				}
+			}
+			return "{\"sucess\": \"OK\"}";
+		} else if (checkL == 2) {
+			return "{\"error\": \"notAllow\"}";
+		}
+		return "{\"error\": \"notLogin\"}";
+	}
+	
+	@GET
+	@Path("/viewPass/{id}")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String viewpass(@Context HttpHeaders httpheaders, @PathParam("id") String id) {
+		String token = httpheaders.getHeaderString("Authorization");
+		int checkL = checkLogin(token);
+		if (checkL == 1) {
+			
+			Employee employee1 = EmployeeDAO.getEmployee(id);
+			return "{\"sucess\": \"" + employee1.getPass() + "\"}";
+		} else if (checkL == 2) {
+			return "{\"error\": \"notAllow\"}";
+		}
+		return "{\"error\": \"notLogin\"}";
+	}
+	
+	
+	private void getSetting() {
+		Connection con = null;
+		Statement stmt = null;
+		try {
+			con = DBUtil.getConnection();
+			stmt = con.createStatement();
+			ResultSet rs = stmt.executeQuery("SELECT name, value from turnSetting");
+			String name = "";
+			while (rs.next()) {
+				name = rs.getString("name");
+				if(name.equals("admin")) {
+					seting.setPass(rs.getString("value"));
+				} else if ((name.equals("role")) ) {
+					seting.setSecurity(rs.getString("value"));
+				}
+			}
+		} catch (URISyntaxException e) { // TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SQLException e) { // TODO Auto-generated catch
+			e.printStackTrace();
+		}  finally {
+			try {
+				con.close();
+				// stmt.close();
+			} catch (SQLException e) {
+			}
+		}
+	}
 	// http://localhost:8080/com.turn/api/addUser/abff
 	@GET
 	@Path("/addUser/{userName}/{pass}")
@@ -299,8 +420,8 @@ public class MyResource {
 	@Path("/addGroup/{id}/{name}/{money}/{free}/{over}/{pass}")
 	@Produces({ MediaType.APPLICATION_JSON })
 	public String addGroup(@Context HttpHeaders httpheaders, @PathParam("id") String id, @PathParam("name") String name,
-			@PathParam("money") double money, @PathParam("free") String free, @PathParam("over") String over,
-			       @PathParam("pass") String pass) {
+			@PathParam("money") double money, @PathParam("free") String free,
+			@PathParam("over") String over, @PathParam("pass") String pass) {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
 		String token = httpheaders.getHeaderString("Authorization");
 		int checkL = checkLogin(token);
@@ -310,8 +431,11 @@ public class MyResource {
 			return "{\"error\": \"notLogin\"}";
 		}
 		Employee employee1 = EmployeeDAO.getEmployee(id);
-		if(!"2608".equals(pass) && !employee1.getPass().equals(pass)) {
-			return "{\"error\": \"notCorrPass\"}";
+		if(seting.getPass() == null)
+			getSetting();
+		if(!seting.getPass().equals(pass) && !employee1.getPass().equals(pass)) {
+			if(!"0".equals(seting.getSecurity()))
+				return "{\"error\": \"notCorrPass\"}";
 		}
 		if ("0".equals(over)) {
 			LocalDateTime checkOut = Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime();
@@ -360,7 +484,7 @@ public class MyResource {
 			return "{\"error\": \"notLogin\"}";
 		}
 		Employee employee1 = EmployeeDAO.getEmployee(id);
-		if(!"2608".equals(pass) && !employee1.getPass().equals(pass)) {
+		if(!seting.getPass().equals(pass) && !employee1.getPass().equals(pass)) {
 			return "{\"error\": \"notCorrPass\"}";
 		}
 		// check null
@@ -459,6 +583,29 @@ public class MyResource {
 		return buildJson(updatePosition(new ArrayList<Employee>(employee.values())), 1, false);
 	}
 
+	@GET
+	@Path("/changeWorkFree/{id}/{pass}")
+	@Produces({ MediaType.APPLICATION_JSON })
+	public String changeWorkFree(@Context HttpHeaders httpheaders, @PathParam("id") String id,
+			 @PathParam("pass") String pass) {
+		String token = httpheaders.getHeaderString("Authorization");
+		int checkL = checkLogin(token);
+		if (checkL == 2) {
+			return "{\"error\": \"notAllow\"}";
+		} else if (checkL == 3) {
+			return "{\"error\": \"notLogin\"}";
+		} 
+		Employee employee1 = EmployeeDAO.getEmployee(id);
+		if(!"n_u_l_l".equals(pass) && 
+				!pass.equals(employee1.getPass()))
+			return "{\"error\": \"notCorrPass\"}";
+		employee1.setIsWorking(!employee1.isIsWorking());
+		LocalDateTime checkIn = Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime();
+		employee1.setLstTime(checkIn);
+		employee = EmployeeDAO.addEmployee(id, employee1);
+		return buildJson(updatePosition(new ArrayList<Employee>(employee.values())), 1, false);
+	}
+	
 	@GET
 	@Path("/delete/{id}")
 	@Produces({ MediaType.APPLICATION_JSON })
@@ -791,12 +938,19 @@ public class MyResource {
 
 	private String buildJson(ArrayList<ArrayList<Employee>> employee, int checkL, boolean search) {
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
+		if(seting.getSecurity() == null || seting.getSecurity().isEmpty()) {
+			getSetting();
+		}
 		// System.out.println("\nEmployee Table Details:");
 		String s = "{\"status\":";
 		if (checkL == 1)
 			s += true;
 		else
 			s += false;
+		if (seting.getSecurity().equals("1"))
+			s += ",\"role\": \"1\"";
+		else
+			s += ",\"role\": \"0\"";
 		s += ",\"detail\":[";
 		// tb.addRow("EmployeeID", "EmployeeName", "CheckInTime", "Total", "Total_Turn",
 		// "Is_Working", "Status", "Position", "Turn_List", "Index_Group");
