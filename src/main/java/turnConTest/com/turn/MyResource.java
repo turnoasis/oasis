@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.Month;
@@ -47,8 +48,8 @@ public class MyResource {
 	HashMap<String, Employee> employee = new HashMap<String, Employee>();
 	HashMap<String, Employee> employeeT = new HashMap<String, Employee>();
 	ArrayList<ArrayList<Employee>> arrOfArrEmployee = new ArrayList<ArrayList<Employee>>();
-	Setting seting = new Setting();
-	public static final int STEP_TURN = 20;
+	public  Setting seting = new Setting();
+	//public static final int STEP_TURN = 20;
 //	public static String username;
 	public static String password;
 
@@ -132,8 +133,18 @@ public class MyResource {
 				Statement stmt = null;
 				try {
 					con = DBUtil.getConnection();
+					
+					/*System.out.println(checkIn.toString());
+					int timeNew = checkOut.getHour() * 60 + checkOut.getMinute();
+					int timeOld = checkIn.getHour() * 60 + checkIn.getMinute();
+					System.out.println(timeNew - timeOld);*/
+					
+					
 					LocalDateTime checkIn = Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime();
 					String formattedDate = dtfL.format(checkIn);
+					/*DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yy:MM:dd HH:mm:ss");
+					LocalDateTime working = LocalDateTime.parse(formattedDate + " " + seting.getDaily(), formatter);*/
+					
 					stmt = con.createStatement();
 					ResultSet rs = stmt.executeQuery("SELECT vl from dataturn where datet=\'" + formattedDate + "\'");
 					employee = EmployeeDAO.clearEmployee();
@@ -286,7 +297,7 @@ public class MyResource {
 	}
 	
 	
-	private void getSetting() {
+	private  void getSetting() {
 		Connection con = null;
 		Statement stmt = null;
 		try {
@@ -300,6 +311,18 @@ public class MyResource {
 					seting.setPass(rs.getString("value"));
 				} else if ((name.equals("role")) ) {
 					seting.setSecurity(rs.getString("value"));
+				} else if ((name.equals("numTV")) ) {
+					seting.setTvNum(rs.getString("value"));
+				} else if ((name.equals("tReward")) ) {
+					seting.settReward(rs.getString("value"));
+				} else if ((name.equals("salonID")) ) {
+					seting.setSalonID(rs.getString("value"));
+				} else if ((name.equals("turn")) ) {
+					seting.setTurn(rs.getString("value"));
+				} else if ((name.equals("daily")) ) {
+					seting.setDaily(rs.getString("value"));
+				} else if ((name.equals("weeken")) ) {
+					seting.setWeeken(rs.getString("value"));
 				}
 			}
 		} catch (URISyntaxException e) { // TODO Auto-generated catch block
@@ -327,13 +350,13 @@ public class MyResource {
 				return "{\"error\": \"sameName\"}";
 			}
 			employee = EmployeeDAO.getEmployee();
+			LocalDateTime checkIn = Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime();
+			String formattedDate = dtfL.format(checkIn);
 			if (employee.size() == 0) {
 				Connection con = null;
 				Statement stmt = null;
 				try {
 					con = DBUtil.getConnection();
-					LocalDateTime checkIn = Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime();
-					String formattedDate = dtfL.format(checkIn);
 					stmt = con.createStatement();
 					ResultSet rs = stmt.executeQuery("SELECT vl from dataturn where datet=\'" + formattedDate + "\'");
 					employee = EmployeeDAO.clearEmployee();
@@ -366,6 +389,24 @@ public class MyResource {
 				}
 			}
 			employee = EmployeeDAO.addEmployee(userName, pass);
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yy:MM:dd HH:mm:ss");
+			LocalDateTime working;
+			if(checkIn.getDayOfWeek().equals(DayOfWeek.SUNDAY))
+				working = LocalDateTime.parse(formattedDate + " " + seting.getWeeken(), formatter);
+			else
+				working = LocalDateTime.parse(formattedDate + " " + seting.getDaily(), formatter);
+			int timeStandar = working.getHour() * 60 + working.getMinute();
+			int timeLogin = checkIn.getHour() * 60 + checkIn.getMinute();
+			int diff = timeLogin - timeStandar;
+			if (diff > 0) {
+				int maxId = 0;
+		        for (String emp : employee.keySet()) {
+					if(Integer.parseInt(emp) > maxId)
+						maxId = Integer.parseInt(emp);
+				}
+		        addGroupSub(Integer.toString(maxId), "Comming late", Double.valueOf(diff), "0", "1", pass,"1");
+			}
+			
 			return buildJson(updatePosition(new ArrayList<Employee>(employee.values())), checkL, false);
 		} else if (checkL == 2) {
 			return "{\"error\": \"notAllow\"}";
@@ -422,7 +463,6 @@ public class MyResource {
 	public String addGroup(@Context HttpHeaders httpheaders, @PathParam("id") String id, @PathParam("name") String name,
 			@PathParam("money") double money, @PathParam("free") String free,
 			@PathParam("over") String over, @PathParam("pass") String pass) {
-		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
 		String token = httpheaders.getHeaderString("Authorization");
 		int checkL = checkLogin(token);
 		if (checkL == 2) {
@@ -430,6 +470,12 @@ public class MyResource {
 		} else if (checkL == 3) {
 			return "{\"error\": \"notLogin\"}";
 		}
+		return addGroupSub(id, name, money, free, over, pass, "0");
+	}
+
+	private String addGroupSub( String id, String name, double money, String free, String over,
+			String pass, String overTime) {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm:ss");
 		Employee employee1 = EmployeeDAO.getEmployee(id);
 		if(seting.getPass() == null)
 			getSetting();
@@ -459,7 +505,7 @@ public class MyResource {
 		employee1.getTurnListD()
 				.add(new WorkHis(name, money, "1".equals(free) ? true : false, Integer.toString(index),
 						dtf.format(Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime()),
-						dtf.format(employee1.getLstTime())));
+						"0".equals(overTime)?dtf.format(employee1.getLstTime()):null));
 		if ("0".equals(free)) {
 			employee1.setTotalTurn(employee1.getTotalTurn() + money);
 		}
@@ -715,7 +761,12 @@ public class MyResource {
 			tmpe.setPass(employee1.get("pass").toString()); // new
 		}
 		tmpe.setPosition(Integer.parseInt(employee1.get("sortOrder").toString()));
-		tmpe.setTotal(Double.parseDouble(employee1.get("turnAll").toString()));
+		try {
+			tmpe.setTotal(Double.parseDouble(employee1.get("turnAll").toString()));
+		} catch (NumberFormatException e) {
+			String[] xxx = employee1.get("turnAll").toString().split("/");
+			tmpe.setTotal(Double.parseDouble(xxx[0]));
+		}
 		tmpe.setTotalTurn(Double.parseDouble(employee1.get("turn").toString()));
 		tmpe.setEmpName(employee1.get("name").toString());
 		tmpe.setIsWorking("1".equals(employee1.get("working").toString()) ? true : false);
@@ -752,7 +803,7 @@ public class MyResource {
 			employee.put(id2, tmpe);
 	}
 
-	public static ArrayList<ArrayList<Employee>> updatePosition(ArrayList<Employee> employee) {
+	public  ArrayList<ArrayList<Employee>> updatePosition(ArrayList<Employee> employee) {
 // total 10, active 6 , inactive 4
 // Get active, inactive number
 		ArrayList<ArrayList<Employee>> arrOfArrEmployee = new ArrayList<ArrayList<Employee>>();
@@ -840,10 +891,13 @@ public class MyResource {
 
 			int j = 1;
 			boolean breakF = true;
+			if(seting.getTurn() == null)
+				getSetting();
+			int step_turn = Integer.parseInt(seting.getTurn());
 			while (j <= (tmpFreeWorker.size() - 1)) {
 				// int k = j;
 				for (int i = j; i > 0; i--) {
-					if (tmpFreeWorker.get(j).getTotalTurn() - STEP_TURN < tmpFreeWorker.get(i - 1).getTotalTurn()) {
+					if (tmpFreeWorker.get(j).getTotalTurn() - step_turn < tmpFreeWorker.get(i - 1).getTotalTurn()) {
 						if (tmpFreeWorker.get(j).getCheckInTime().isBefore(tmpFreeWorker.get(i - 1).getCheckInTime())) {
 							Collections.swap(tmpFreeWorker, i - 1, j);
 							j = i - 1;
@@ -971,7 +1025,6 @@ public class MyResource {
 					s += "\"pass\" : \"" + employee.get(j).get(index).getPass() + "\",";
 				s += "\"sortOrder\" : \"" + employee.get(j).get(index).getPosition() + "\",";
 				s += "\"turn\" : \"" + employee.get(j).get(index).getTotalTurn() + "\",";
-				s += "\"turnAll\" : \"" + employee.get(j).get(index).getTotal() + "\",";
 				s += "\"status\" : \"" + ((employee.get(j).get(index).isActive()) ? "1" : "0") + "\",";
 				s += "\"working\" : \"" + ((employee.get(j).get(index).isIsWorking()) ? "1" : "0") + "\",";
 				s += "\"loginTime\" : \"" + dtf.format(employee.get(j).get(index).getCheckInTime()) + "\",";
@@ -981,12 +1034,16 @@ public class MyResource {
 					s += "\"lstTime\" : \"" + dtf.format(employee.get(j).get(index).getLstTime()) + "\",";
 				s += "\"workHis\" : [";
 				k = 0;
+				int lateMoney = 0;
 				for (WorkHis work : employee.get(j).get(index).getTurnListD()) {
 					if (k == 0) {
 						s += "{";
 						k++;
 					} else
 						s += ",{";
+					if("Comming late".equals(work.getName())) {
+						lateMoney =(int) work.getMoney();
+					}
 					s += "\"id\" : \"" + work.getId() + "\",";
 					s += "\"name\" : \"" + work.getName() + "\",";
 					s += "\"free\" : \"" + ((work.isTurn()) ? "1" : "0") + "\",";
@@ -995,7 +1052,11 @@ public class MyResource {
 					s += "\"startTime\" : \"" + (work.getStartTime() == null ? "-" : work.getStartTime()) + "\"";
 					s += "}";
 				}
-				s += "]";
+				s += "],";
+				if(lateMoney > 0)
+					s += "\"turnAll\" : \"" + employee.get(j).get(index).getTotal() + "/" + lateMoney + "\"";
+				else
+					s += "\"turnAll\" : \"" + employee.get(j).get(index).getTotal() + "\"";
 				s += "}";
 			}
 		}
