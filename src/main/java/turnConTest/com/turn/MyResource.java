@@ -642,8 +642,7 @@ public class MyResource {
 			return "{\"error\": \"notLogin\"}";
 		} 
 		Employee employee1 = EmployeeDAO.getEmployee(id);
-		if(!"n_u_l_l".equals(pass) && 
-				!pass.equals(employee1.getPass()))
+		if(!pass.equals(employee1.getPass()))
 			return "{\"error\": \"notCorrPass\"}";
 		employee1.setIsWorking(!employee1.isIsWorking());
 		LocalDateTime checkIn = Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime();
