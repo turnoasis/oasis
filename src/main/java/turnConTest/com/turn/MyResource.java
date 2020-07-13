@@ -483,6 +483,7 @@ public class MyResource {
 			if(!"0".equals(seting.getSecurity()))
 				return "{\"error\": \"notCorrPass\"}";
 		}
+		System.out.println("..." + name + "...");
 		if ("0".equals(over) && (!"Other".equals(name)
 					||!" Other ".equals(name)
 					|| !"%20Other%20".equals(name))) {
