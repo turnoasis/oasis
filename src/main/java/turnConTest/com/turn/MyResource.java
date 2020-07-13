@@ -483,10 +483,8 @@ public class MyResource {
 			if(!"0".equals(seting.getSecurity()))
 				return "{\"error\": \"notCorrPass\"}";
 		}
-		System.out.println("..." + name + "...");
-		if ("0".equals(over) && (!"Other".equals(name)
-					||!" Other ".equals(name)
-					|| !"%20Other%20".equals(name))) {
+		//System.out.println("..." + name + "...");
+		if ("0".equals(over) && !" Other ".equals(name)) {
 			LocalDateTime checkOut = Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime();
 			LocalDateTime checkIn = employee1.getLstTime();
 			int timeNew = checkOut.getHour() * 60 + checkOut.getMinute();
