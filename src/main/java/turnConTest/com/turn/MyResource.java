@@ -483,7 +483,7 @@ public class MyResource {
 			if(!"0".equals(seting.getSecurity()))
 				return "{\"error\": \"notCorrPass\"}";
 		}
-		if ("0".equals(over)) {
+		if ("0".equals(over) && !"Other".equals(name)) {
 			LocalDateTime checkOut = Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime();
 			LocalDateTime checkIn = employee1.getLstTime();
 			int timeNew = checkOut.getHour() * 60 + checkOut.getMinute();
@@ -507,7 +507,7 @@ public class MyResource {
 						dtf.format(Instant.now().atZone(ZoneId.of("US/Central")).toLocalDateTime()),
 						"0".equals(overTime)?dtf.format(employee1.getLstTime()):null));
 		if ("0".equals(free)) {
-			employee1.setTotalTurn(employee1.getTotalTurn() + money);
+			employee1.setTotalTurn(employee1.getTotalTurn() + 1.0);
 		}
 		employee1.setTotal(employee1.getTotal() + money);
 		employee1.setIsWorking(false);
@@ -543,11 +543,11 @@ public class MyResource {
 		}
 		WorkHis wk = employee1.getTurnListD().get(index);
 		if ("0".equals(free) && !wk.isTurn()) {
-			employee1.setTotalTurn(employee1.getTotalTurn() + money - wk.getMoney());
+			employee1.setTotalTurn(employee1.getTotalTurn() );
 		} else if ("0".equals(free) && wk.isTurn()) {
-			employee1.setTotalTurn(employee1.getTotalTurn() + money);
+			employee1.setTotalTurn(employee1.getTotalTurn() + 1.0);
 		} else if ("1".equals(free) && !wk.isTurn()) {
-			employee1.setTotalTurn(employee1.getTotalTurn() - wk.getMoney());
+			employee1.setTotalTurn(employee1.getTotalTurn() - 1.0);
 		}
 		employee1.setTotal(employee1.getTotal() + money - wk.getMoney());
 		wk.setId(groudid);
@@ -585,7 +585,7 @@ public class MyResource {
 		}
 		WorkHis wk = employee1.getTurnListD().get(index);
 		if (!wk.isTurn()) {
-			employee1.setTotalTurn(employee1.getTotalTurn() - wk.getMoney());
+			employee1.setTotalTurn(employee1.getTotalTurn() - 1.0);
 		}
 		employee1.setTotal(employee1.getTotal() - wk.getMoney());
 		employee1.getTurnListD().remove(index);
